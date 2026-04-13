@@ -72,3 +72,5 @@ users_random_password: false
 users_random_password_command: "pwgen --secure 12 1"
 # date to set the random password change date (2020-01-01 is 18262)
 users_random_password_change_date: "2020-01-01"
+# debugging
+users_debug: false
