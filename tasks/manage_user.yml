@@ -1,4 +1,10 @@
 ---
+- name: "Checking if user '{{ user.username }}' exists"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ user.username }}"
+  failed_when: false
+  changed_when: false
 
 - name: "Adding user '{{ user.username }}' to the system"
   ansible.builtin.user:
