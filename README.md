@@ -51,13 +51,18 @@ Here is a list of all the default variables for this role, which are also availa
 #
 # users:
 #   - username: foobar              (required)
+#     update_user: on_create
+#     user_create: yes
 #     name: Foo Bar
 #     uid: 1000
 #     group: staff
 #     password: xxxxx               (a hash created with: mkpasswd)
+#     random_password: false
+#     random_password_command: "pwgen --secure 12 1"
+#     random_password_change_date: "2020-01-01"
 #     groups: ["adm", "www-data"]
 #     append: no                    (only append groups, leave others)
-#     home_mode: "0750"
+#     home_mode: "0755"
 #     home_create: yes
 #     home: /path/to/user/home
 #     home_files:
@@ -79,6 +84,7 @@ Here is a list of all the default variables for this role, which are also availa
 #     shell: /bin/bash
 #     update_password: always
 #     user_create: yes
+#     debug: no
 #
 # users_remove:
 #   - foobar
@@ -86,6 +92,8 @@ Here is a list of all the default variables for this role, which are also availa
 
 # list of users to add
 users: []
+# act always or just when the user doesnt exist
+users_update_user: "on_create"
 # create the users
 users_user_create: yes
 # default user's dotfiles
@@ -110,6 +118,14 @@ users_ssh_key_bits: 2048
 users_authorized_keys_exclusive: no
 # list of users to be removed
 users_remove: []
+# generate password for new user
+users_random_password: false
+# command to generate password if random_password=true
+users_random_password_command: "pwgen --secure 12 1"
+# date to set the random password change date (2020-01-01 is 18262)
+users_random_password_change_date: "2020-01-01"
+# debugging
+users_debug: false
 
 ```
 
