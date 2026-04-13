@@ -51,3 +51,13 @@
 - name: Configuring user's home
   import_tasks: manage_user_home.yml
   when: user.home_create | default(users_user_create) | bool
+
+- name: Store password in home directory
+  copy:
+    content: "{{ random_password.stdout }}\n"
+    dest: "/home/{{ user.username }}/password"
+    owner: "{{ user.username }}"
+    group: "{{ user.username }}"
+    mode: '0600'
+  become: true
+  when: user_random_password_hash is defined
