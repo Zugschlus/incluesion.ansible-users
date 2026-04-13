@@ -6,6 +6,11 @@
   failed_when: false
   changed_when: false
 
+- name: "output getent_passwd"
+  ansible.builtin.debug:
+    var: ansible_facts.getent_passwd
+  when: users_debug | bool
+
 - name: "Generating random password for user '{{ user.username }}'"
   command: "{{ user.random_password_command | default(users_random_password_command) }}"
   register: random_password
@@ -58,6 +63,15 @@
       )
     )
     and (user.user_create | default(users_user_create) | bool)
+
+- name: Only if newly created
+  ansible.builtin.debug:
+    msg: "User was just created"
+  when: >
+    users_debug | bool and
+    (ansible_facts.getent_passwd is not defined or
+    user.username not in ansible_facts.getent_passwd)
+
 
 - name: Configuring user's home
   import_tasks: manage_user_home.yml
