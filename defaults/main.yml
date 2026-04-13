@@ -5,13 +5,18 @@
 #
 # users:
 #   - username: foobar              (required)
+#     update_user: on_create
+#     user_create: yes
 #     name: Foo Bar
 #     uid: 1000
 #     group: staff
 #     password: xxxxx               (a hash created with: mkpasswd)
+#     random_password: false
+#     random_password_command: "pwgen --secure 12 1"
+#     random_password_change_date: "2020-01-01"
 #     groups: ["adm", "www-data"]
 #     append: no                    (only append groups, leave others)
-#     home_mode: "0750"
+#     home_mode: "0755"
 #     home_create: yes
 #     home: /path/to/user/home
 #     home_files:
@@ -33,6 +38,7 @@
 #     shell: /bin/bash
 #     update_password: always
 #     user_create: yes
+#     debug: no
 #
 # users_remove:
 #   - foobar
