@@ -40,6 +40,8 @@
 
 # list of users to add
 users: []
+# act always or just when the user doesnt exist
+users_update_user: "on_create"
 # create the users
 users_user_create: yes
 # default user's dotfiles

@@ -45,8 +45,19 @@
     ssh_key_bits: "{{ user.ssh_key_bits | default(users_ssh_key_bits) }}"
     createhome: "{{ user.home_create | default(users_home_create) }}"
     shell: "{{ user.shell | default(users_shell | default(omit)) }}"
-  when: user.user_create | default(users_user_create)
     update_password: "{{ 'always' if ( user_random_password_hash is defined ) else (user.update_password | default(omit)) }}"
+  when: >
+    (
+      (user.update_user | default("on_create") ) == "always" or
+      (
+        (user.update_user | default("on_create") ) == "on_create" and
+        (
+          ansible_facts.getent_passwd is not defined or
+          user.username not in ansible_facts.getent_passwd
+        )
+      )
+    )
+    and (user.user_create | default(users_user_create) | bool)
 
 - name: Configuring user's home
   import_tasks: manage_user_home.yml
