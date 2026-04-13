@@ -6,6 +6,25 @@
   failed_when: false
   changed_when: false
 
+- name: "Generating random password for user '{{ user.username }}'"
+  command: "{{ user.random_password_command | default(users_random_password_command) }}"
+  register: random_password
+  delegate_to: localhost
+  become: false
+  run_once: false
+  changed_when: false
+  when: >
+    (
+      ansible_facts.getent_passwd is not defined or
+      user.username not in ansible_facts.getent_passwd
+    ) and
+    user.random_password | default(users_random_password) | bool
+
+- name: "Hashing password for user '{{ user.username }}'"
+  set_fact:
+    user_random_password_hash: "{{ random_password.stdout | password_hash('sha512') }}"
+  when: random_password is defined and random_password.stdout is defined
+
 - name: "Adding user '{{ user.username }}' to the system"
   ansible.builtin.user:
     name: "{{ user.username }}"

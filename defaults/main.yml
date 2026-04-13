@@ -64,3 +64,7 @@ users_ssh_key_bits: 2048
 users_authorized_keys_exclusive: no
 # list of users to be removed
 users_remove: []
+# generate password for new user
+users_random_password: false
+# command to generate password if random_password=true
+users_random_password_command: "pwgen --secure 12 1"
