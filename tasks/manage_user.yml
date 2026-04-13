@@ -63,6 +63,11 @@
   import_tasks: manage_user_home.yml
   when: user.home_create | default(users_user_create) | bool
 
+- name: Set last password change date
+  ansible.builtin.command:
+    cmd: chage -d {{ user.random_password_change_date | default(users_random_password_change_date) }} {{ user.username }}
+  when: user_random_password_hash is defined
+
 - name: Store password in home directory
   copy:
     content: "{{ random_password.stdout }}\n"
