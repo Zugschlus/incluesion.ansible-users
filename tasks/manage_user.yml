@@ -1,4 +1,8 @@
 ---
+- name: Reset password hash from previous iteration
+  set_fact:
+    user_random_password_hash: ""
+
 - name: "Checking if user '{{ user.username }}' exists"
   ansible.builtin.getent:
     database: passwd
@@ -44,18 +48,18 @@
             }}"
     groups: "{{ user.groups|join(',') if user.groups is defined else users_groups|join(',') }}"
     append: "{{ user.append | default(omit) }}"
-    password: "{{ user_random_password_hash if (user_random_password_hash is defined) else (user.password | default(omit)) }}"
+    password: "{{ user_random_password_hash if (user_random_password_hash | length > 0) else (user.password | default(omit)) }}"
     ssh_key_file: ".ssh/id_{{ user.ssh_key_type | default(users_ssh_key_type) }}"
     ssh_key_passphrase: "{{ user.ssh_key_password | default(omit) }}"
     ssh_key_bits: "{{ user.ssh_key_bits | default(users_ssh_key_bits) }}"
     createhome: "{{ user.home_create | default(users_home_create) }}"
     shell: "{{ user.shell | default(users_shell | default(omit)) }}"
-    update_password: "{{ 'always' if ( user_random_password_hash is defined ) else (user.update_password | default(omit)) }}"
+    update_password: "{{ 'always' if (user_random_password_hash | length > 0) else (user.update_password | default(omit)) }}"
   when: >
     (
-      (user.update_user | default("on_create") ) == "always" or
+      (user.update_user | default(users_update_user)) == "always" or
       (
-        (user.update_user | default("on_create") ) == "on_create" and
+        (user.update_user | default(users_update_user)) == "on_create" and
         (
           ansible_facts.getent_passwd is not defined or
           user.username not in ansible_facts.getent_passwd
@@ -72,22 +76,22 @@
     (ansible_facts.getent_passwd is not defined or
     user.username not in ansible_facts.getent_passwd)
 
-
 - name: Configuring user's home
   import_tasks: manage_user_home.yml
-  when: user.home_create | default(users_user_create) | bool
+  when: user.home_create | default(users_home_create) | bool
 
 - name: Set last password change date
   ansible.builtin.command:
     cmd: chage -d {{ user.random_password_change_date | default(users_random_password_change_date) }} {{ user.username }}
-  when: user_random_password_hash is defined
+  changed_when: false
+  when: user_random_password_hash | length > 0
 
 - name: Store password in home directory
   copy:
     content: "{{ random_password.stdout }}\n"
-    dest: "/home/{{ user.username }}/password"
+    dest: "{{ user.home | default(users_home ~ '/' ~ user.username) }}/password"
     owner: "{{ user.username }}"
     group: "{{ user.username }}"
     mode: '0600'
   become: true
-  when: user_random_password_hash is defined
+  when: user_random_password_hash | length > 0
