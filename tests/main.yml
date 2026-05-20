@@ -44,12 +44,62 @@
       - username: foobar_file
         home_files:
           - "tests/.bashrc"
+      - username: foobar_random_password
+        random_password: true
+      - username: foobar_update_always
+        update_user: always
+      - username: foobar_shell
+        shell: /bin/sh
+      - username: foobar_custom_home
+        home: /tmp/foobar_custom_home
     users_group:
       name: staff
     users_groups:
       - name: www-data
     users_authorized_keys_exclusive: true
     users_remove:
-      - foobar
-      - { username: foobar_key, remove: false }
-      - { username: foobar_authorized_keys, remove: true }
+    - foobar
+    - { username: foobar_key, remove: false }
+    - { username: foobar_authorized_keys, remove: true }
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: Verify foobar_random_password password file exists
+      ansible.builtin.stat:
+        path: /home/foobar_random_password/password
+      register: pw_file
+
+    - name: Assert password file has correct permissions and owner
+      ansible.builtin.assert:
+        that:
+          - pw_file.stat.exists
+          - pw_file.stat.mode == '0600'
+          - pw_file.stat.pw_name == 'foobar_random_password'
+
+    - name: Verify foobar_shell shell via getent
+      ansible.builtin.getent:
+        database: passwd
+        key: foobar_shell
+
+    - name: Assert foobar_shell has /bin/sh
+      ansible.builtin.assert:
+        that: ansible_facts.getent_passwd['foobar_shell'][5] == '/bin/sh'
+
+    - name: Verify foobar_custom_home directory exists at custom path
+      ansible.builtin.stat:
+        path: /tmp/foobar_custom_home
+      register: custom_home
+
+    - name: Assert custom home is a directory
+      ansible.builtin.assert:
+        that: custom_home.stat.isdir
+
+    - name: Verify foobar_nohome has no home directory
+      ansible.builtin.stat:
+        path: /home/foobar_nohome
+      register: nohome_dir
+
+    - name: Assert foobar_nohome home directory was not created
+      ansible.builtin.assert:
+        that: not nohome_dir.stat.exists
