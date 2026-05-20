@@ -1,3 +1,19 @@
+## [Unreleased]
+
+#### Features
+
+- `random_password`, `random_password_command`, `random_password_change_date` per-user options and matching role defaults for generating and storing random passwords
+- `update_user` per-user option and `users_update_user` role default (`on_create` or `always`) to control whether user properties are updated on every run
+- `users_debug` role default for debug output
+
+#### Bug Fixes
+
+- `user_random_password_hash` fact was leaking across users in the loop, causing subsequent users to inherit a previous user's password hash
+- Password file was always written to `/home/<user>/password`, ignoring `user.home` and `users_home`
+- `update_user` per-user default was hardcoded to `"on_create"` instead of reading `users_update_user`, making the role variable a no-op
+- `Configuring user's home` condition fell back to `users_user_create` instead of `users_home_create`
+- `chage` task always reported `changed`
+
 <a name="1.17.0"></a>
 ## 1.17.0 (2020-11-06)
 
